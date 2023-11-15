@@ -1,0 +1,96 @@
+# GATRes
+![GATRes architecture](model_architecture.png)
+**G**raph **A**ttention Ne**T**work with **Res**idual connections
+
+This is the official repository for the paper: **"Graph Neural Networks for Pressure Estimation in Water Distribution Systems"**.
+
+## Installation
+
+You can follow the instruction to run the data generation tool and GATRes models. 
+
+1. Clone or download this repository.
+2. Activate *venv* environment with available Python (>=3.9), PyTorch (>=2.0) and/or CUDA (11.8). In case of a new environment, consider install required libraries via this command:
+
+    ``pip install -r requirement.txt``
+
+## Repo map
+
+```
+    |-- checkpoints                 - dir for storing model checkpoints 
+    |-- configs                     - config storage for data generation tool  
+    |-- experiment_logs             - dir for tracking experiment logs
+    |-- generator                   - code for data generation tool
+    |-- inputs                      - water distribution network topologies
+    |-- utils                       - auxiliary functions for running models
+    |-- ConfigModels.py             - defaul model configurations for running models
+    |-- GraphModels.py              - model definition
+    |-- evaluation.py               - code for testing model
+    |-- train.py                    - code for training model
+```
+
+## Data generation tool
+
+This section will give you an instruction to generate an example dataset. A dataset is a set of arbitrary snapshots, an instantaneous water network state at a particular time. A state can consist of one (some) measurement, such as pressures, heads, demands, etc... To create snapshots, run the following steps:
+
+1. Add a preferred input file (.INP) that contains a topology into the `inputs` folder. 
+Note: Skip this step if you use default public water networks in the folder (under public licenses).
+
+2. Add a data generation config (.INI) file. User can create a dummy one using this command:
+```
+python generator\EPYNET\ConfigCreator.py -r inputs\<your_inp_path>
+```
+You can find out the created config file (.INI) at `configs` folder.
+
+3. Run this command to create a dataset:
+```
+python generator\EPYNET\scenegenv7.py   --config <your_ini_path>
+                                        --executors <num_of_workers>
+                                        --batch_size <batch_size_per_worker>
+```
+There are many flags and options introduced in `scenegenv7.py`.
+
+The new dataset will be a zip file (.ZIP).
+
+
+## Training model
+
+User can train GATRes model using a this default command:
+```
+python train.py --model gatres_small
+                --epochs 500
+                --batch_size 8
+                --device 'cuda'
+                --mask_rate 0.95
+                --datasets_paths <dataset_path1> <dataset_path2>
+                --input_paths <inp_path1> <inp_path2>
+                --test_data_path <test_dataset_path>
+                --test_input_path <test_dataset_path>
+                --save_path <where_to_save_checkpoints>
+```
+
+## Inference
+
+When you run the above command, trained model will be tested immediately after training. Otherwise,you can make a manual test using this command:
+
+```
+python evaluation.py    --model gatres_small
+                        --model_path <where_to_load_trained_weights>
+                        --batch_size 8
+                        --num_test_trials 10
+                        --test_type 'clean'
+                        --device 'cuda'
+                        --mask_rate 0.95
+                        --datasets_paths <train_dataset_path> 
+                        --input_paths <train_inp_path>
+                        --test_data_path <test_dataset_path>
+                        --test_input_path <test_dataset_path>
+```
+
+## License
+
+MIT license. See the LICENSE file for more details.
+
+## Citing
+
+Comming soon...
+

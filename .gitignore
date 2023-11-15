@@ -1,0 +1,34 @@
+.idea/
+.ipynb_checkpoints/
+__pycache__
+
+random_array/
+checkpoints/
+*.pkl
+*.rpt
+*.zgroup
+*.zarray
+*.zattrs
+GEN-09 Oosterbeek/
+Val-GEN-09 Oosterbeek/
+wandb/
+ky13/
+richmond/
+Richmond_standard/
+rome/
+L-TOWN_Real/
+test/
+unpublish/
+unpublish2/
+training/
+dataset/
+datasets/
+experiments_logs/
+calibration/
+launch.json
+*/zarrays/
+mysecrets.py
+writing/
+experiments_logs/
+artifact/ 
+
