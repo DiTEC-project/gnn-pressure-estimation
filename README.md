@@ -9,7 +9,7 @@ This is the official repository for the paper: **"Graph Neural Networks for Pres
 You can follow the instructions to run the data generation tool and GATRes models. 
 
 1. Clone or download this repository.
-2. Activate *venv* environment with available Python (>=3.9), PyTorch (>=2.0), PyTorch Geometric (>=2.4), and/or CUDA (11.8). In case of a new environment, consider installing the required libraries via this command:
+2. Activate *venv* environment with available Python (>=3.9), PyTorch (>=2.0), PyTorch Geometric (>=2.3), and/or CUDA (11.8). In case of a new environment, consider installing the required libraries via this command:
 
     ``pip install -r requirement.txt``
 
