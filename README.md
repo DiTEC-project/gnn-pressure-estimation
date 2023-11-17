@@ -6,10 +6,10 @@ This is the official repository for the paper: **"Graph Neural Networks for Pres
 
 ## Installation
 
-You can follow the instruction to run the data generation tool and GATRes models. 
+You can follow the instructions to run the data generation tool and GATRes models. 
 
 1. Clone or download this repository.
-2. Activate *venv* environment with available Python (>=3.9), PyTorch (>=2.0) and/or CUDA (11.8). In case of a new environment, consider install required libraries via this command:
+2. Activate *venv* environment with available Python (>=3.9), PyTorch (>=2.0), PyTorch Geometric (>=2.4), and/or CUDA (11.8). In case of a new environment, consider installing the required libraries via this command:
 
     ``pip install -r requirement.txt``
 
@@ -22,7 +22,7 @@ You can follow the instruction to run the data generation tool and GATRes models
     |-- generator                   - code for data generation tool
     |-- inputs                      - water distribution network topologies
     |-- utils                       - auxiliary functions for running models
-    |-- ConfigModels.py             - defaul model configurations for running models
+    |-- ConfigModels.py             - default model configurations for running models
     |-- GraphModels.py              - model definition
     |-- evaluation.py               - code for testing model
     |-- train.py                    - code for training model
@@ -39,7 +39,7 @@ Note: Skip this step if you use default public water networks in the folder (und
 ```
 python generator\EPYNET\ConfigCreator.py -r inputs\<your_inp_path>
 ```
-You can find out the created config file (.INI) at `configs` folder.
+You can find the created config file (.INI) in the `configs` folder.
 
 3. Run this command to create a dataset:
 ```
@@ -54,7 +54,7 @@ The new dataset will be a zip file (.ZIP).
 
 ## Training model
 
-User can train GATRes model using a this default command:
+User can train GATRes model using this default command:
 ```
 python train.py --model gatres_small
                 --epochs 500
@@ -70,7 +70,7 @@ python train.py --model gatres_small
 
 ## Inference
 
-When you run the above command, trained model will be tested immediately after training. Otherwise,you can make a manual test using this command:
+When you run the above command, the trained model will be tested immediately after training. Otherwise, you can make a manual test using this command:
 
 ```
 python evaluation.py    --model gatres_small
