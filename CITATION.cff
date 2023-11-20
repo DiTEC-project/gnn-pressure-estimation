@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below. In case you cite the paper, please cite the preferred version."
+authors:
+- family-names: "Truong"
+  given-names: "Huy"
+  orcid: "https://orcid.org/0009-0006-9079-321X"
+- family-names: "Tello"
+  given-names: "Andr'{e}s"
+- family-names: "Lazovik"
+  given-names: "Alexander"
+- family-names: "Degeler"
+  given-names: "Victoria"
+title: "GATRes"
+version: 1.0
+doi: 10.5281/zenodo.10159270
+date-released: 2017-12-18
+url: "https://github.com/DiTEC-project/gnn-pressure-estimation"
+type: software
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Truong"
+    given-names: "Huy"
+    orcid: "https://orcid.org/0009-0006-9079-321X"
+  - family-names: "Tello"
+    given-names: "Andr'{e}s"
+  - family-names: "Lazovik"
+    given-names: "Alexander"
+  - family-names: "Degeler"
+    given-names: "Victoria"
+  archivePrefix: "Arxiv"
+  title: "Graph Neural Networks for Pressure Estimation in Water Distribution Systems"
+  year: 2023
+  eprint: "2311.10579"
+  primaryClass: "cs.LG"
+  note: "submitted to Water Resources Research"
+  
