@@ -10,10 +10,9 @@ authors:
   given-names: "Alexander"
 - family-names: "Degeler"
   given-names: "Victoria"
-title: "GATRes"
+title: "GATRes and Dataset generation tool"
 version: 1.0
 doi: 10.5281/zenodo.10159270
-date-released: 2017-12-18
+date-released: 2023-11-20
 url: "https://github.com/DiTEC-project/gnn-pressure-estimation"
-type: software
   
