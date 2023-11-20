@@ -16,9 +16,9 @@ You can follow the instructions to run the data generation tool and GATRes model
 ## Repo map
 
 ```
-    |-- checkpoints                 - dir for storing model checkpoints 
+    |-- checkpoints                 - dir for storing model checkpoints #created in dataset generation process
     |-- configs                     - config storage for data generation tool  
-    |-- experiment_logs             - dir for tracking experiment logs
+    |-- experiment_logs             - dir for tracking experiment logs #created for loading model weights
     |-- generator                   - code for data generation tool
     |-- inputs                      - water distribution network topologies
     |-- utils                       - auxiliary functions for running models
