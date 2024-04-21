@@ -14,8 +14,8 @@
 
 import sys
 # setting path
-sys.path.append('../signal-recovery')
-from TokenGeneratorByRange import *
+sys.path.append('../gnn-pressure-estimation')
+from  generator.EPYNET.TokenGeneratorByRange import *
 import argparse
 import os
 import shutil
@@ -24,7 +24,7 @@ import zarr
 import matplotlib.pyplot as plt
 from time import time
 from tqdm import tqdm
-from Executorv7 import *
+from generator.EPYNET.Executorv7 import *
 import ray
 import pandas as pd
 from ray.exceptions import RayError
@@ -56,7 +56,7 @@ parser.add_argument('--ele_std',default=1.,type=float,help='the std apart from t
 parser.add_argument('--update_elevation_json', default = None, type = str, help = 'JSON string. Overriding elevation values according to the JSON file. Set None if unsed. Default is None')
 
 #pipe settings
-parser.add_argument('--gen_roughness', default = True, type = bool, help = 'flag indicates to change the pipe roughness')
+parser.add_argument('--gen_roughness', default = False, type = bool, help = 'flag indicates to change the pipe roughness')
 parser.add_argument('--gen_diameter', default = False, type = bool, help = 'flag indicates to change the pipe diameter')
 parser.add_argument('--dia_kmean_init', default = 'k-means++', type = str, help = '(UNSED)Initialization of K-mean for diameter cluster = k-means++ | random')
 parser.add_argument('--gen_length', default = False, type = bool, help = 'flag indicates to change the pipe roughness')
@@ -100,7 +100,7 @@ parser.add_argument('--update_res_total_head_json', default = None, type = str, 
 #settings
 parser.add_argument('--debug', default = True, type = bool, help = 'flag allows to print some useful measurements')
 parser.add_argument('--allow_error', default = False, type = bool, help = 'flag allows to bypass error scenarios (useful for debug ), defaults to False')
-parser.add_argument('--convert_results_by_flow_unit', default= 'CMH', type=str, help='CMH Convert all results according to the SI flow units that includes LPS, LPM, MLD, CMH, CMD. Set None to keep original unit' )
+parser.add_argument('--convert_results_by_flow_unit', default= 'LPS', type=str, help='Convert all results according to the SI flow units that includes LPS, LPM, MLD, CMH, CMD. Set None to keep original unit' )
 parser.add_argument('--change_dmd_by_junc_indices_path', default=None, type = str, help = 'selected_sensitivity_by_cv_2023-02-13.pkl|Path to the indices of junctions used to change demand only. The one which is not in this list has the minimum value. Setting None if not used')#
 
 #conditions
@@ -119,8 +119,6 @@ parser.add_argument('--train_ratio',default=0.6,type=float,help='the ratio of tr
 parser.add_argument('--valid_ratio',default=0.2,type=float,help='the ratio of validation scenarios and total')
 parser.add_argument('--is_single_thread',default=False,type=bool,help='run the generation with only a single thread for debugging only. Defaults is False')
 
-
-
 args = parser.parse_args([])
 
 config = ConfigParser()
@@ -134,7 +132,7 @@ zarr_storage_dir = os.path.join(storage_dir,'zarrays')
 random_array_dir = os.path.basename(wn_inp_path)[:-4] + '_random_array_'+ datetime.datetime.now().strftime('%m_%d_%Y_%H_%M') #get input name
 random_array_dir = os.path.join(storage_dir,random_array_dir)
 os.makedirs(storage_dir,exist_ok=True)
-os.chdir(storage_dir)
+#os.chdir(storage_dir)
 shutil.rmtree(path=storage_dir,ignore_errors=True)
 os.makedirs(zarr_storage_dir,exist_ok=False)
 
@@ -445,6 +443,9 @@ try:
     print(f'Success/Expected: {success_scenarios}/{num_scenarios} scenes')
     
     del root_group[ParamEnum.RANDOM_TOKEN]
+    
+    indent= 16
+    precision =8
     if success_scenarios > 0:
         for name in list(tmp_group.keys()):
             name_group= root_group.create_group(name,overwrite=True)
@@ -495,13 +496,14 @@ try:
             root_group[key].attrs['cv'] = train_cv
             
             print(f'##############################{key}###############################################')
-            print(f'min         : {train_min}')
-            print(f'max         : {train_max}')
-            print(f'mean        : {train_mean}')
-            print(f'std         : {train_std}')
-            print(f'mean fcoef  : {train_mean_feat_coef}')
-            print(f'mean bcoef  : {train_mean_batch_coef}')
-            print(f'cv          : {train_cv}')
+            
+            print(f'Mean:   {train_mean:>{indent}.{precision}f}')    
+            print(f'Std:    {train_std:>{indent}.{precision}f}')    
+            print(f'Min:    {train_min:>{indent}.{precision}f}')    
+            print(f'Max:    {train_max:>{indent}.{precision}f}')    
+            print(f'CV:     {train_cv:>{indent}.{precision}f}')    
+            print(f'FCoef:  {train_mean_feat_coef:>{indent}.{precision}f}')   
+            print(f'BCoef:  {train_mean_batch_coef:>{indent}.{precision}f}')   
                                                                                                                                                                                                                                                                                                                                                                                                                                     
 
             key_train = os.path.join(key,'train')
@@ -532,14 +534,23 @@ try:
         print(root_group.tree())
 
         if args.debug:
-            f, axs = plt.subplots(2,1)
-            axs[0].hist(np.mean(train_a, axis=0), bins=100, alpha=1)
-            axs[0].set_title('Histogram-  mean axis = 0')
-            axs[1].hist(np.mean(train_a, axis=1), bins=100, alpha=1)
-            axs[1].set_title('Histogram-  mean axis = 1')
+            plot_scenes = 10
+            limit_snapshots_per_scene = 100
+            num_bins = 100
+            alpha = 0.5
+            for key in key_list:
+                train_set = root_group[key]['train'][:plot_scenes]
+                ran_indices = np.random.permutation(limit_snapshots_per_scene * train_set.shape[0])
+                ran_samples = train_set.flatten()[ran_indices]
+                plt.hist(ran_samples, bins=num_bins, alpha=alpha, label=key)
+
+            network_name = os.path.basename(wn_inp_path)[:-4]
+            plt.title(f'Histograms of {key_list} in {network_name}')
+            plt.legend()
             plt.show()
 except Exception as e:
     print(e)
 #finally:
 #    shutil.rmtree(random_array_dir)
+ 
  

@@ -14,7 +14,7 @@ import json
 from tqdm import tqdm
 from epynet import Network, ObjectCollection
 from epynet import epanet2
-import epynet_utils as eutils
+from generator.EPYNET import epynet_utils as eutils
 import os
 import ray
 import zarr

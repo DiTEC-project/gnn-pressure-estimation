@@ -18,8 +18,8 @@ from epynet import epanet2
 import wntr
 import wntr.epanet.util as wutils
 import networkx as nx
-import epynet_utils as eutils
-from TokenGeneratorByRange import ParamEnum
+from generator.EPYNET  import epynet_utils as eutils
+from generator.EPYNET.TokenGeneratorByRange import ParamEnum
 
 class WDNExecutor(object):
 
@@ -94,7 +94,7 @@ class WDNExecutor(object):
         self.flow_unit = wutils.FlowUnits(self.wn.ep.ENgetflowunits()) 
 
         if args.skip_resevoir_result:
-            self.skip_nodes.extend(self.wn.reservoirs.uid.to_list())
+            self.skip_nodes.extend(self.wn.reservoirs.uid.to_list()) #type:ignore
 
         if self.remove_pattern:
             patterns = self.wn.patterns
