@@ -32,7 +32,7 @@ from ray.exceptions import RayError
 program_start = time()
 parser = argparse.ArgumentParser()
 #main config
-parser.add_argument('--config', default = r"G:\Other computers\My Laptop\PhD\Codebase\signal-recovery\configs\v7.1\ctown_7v1__EPYNET_config.ini" , type = str, help = 'configuration path')
+parser.add_argument('--config', default = r"configs/v7.1/ctown_7v1__EPYNET_config.ini" , type = str, help = 'configuration path')
 
 #initial valve/pipe states
 parser.add_argument('--init_valve_state',default = 1, type=int, help= 'init status = CheckedValve(3) Active(2) Open(1) Closed(0) KeepInitStatus(None)')
@@ -93,7 +93,7 @@ parser.add_argument('--update_tank_diameter_json', default = None, type = str, h
 
 #reservoir settings
 parser.add_argument('--gen_res_total_head', default = True, type = bool, help = 'flag indicates to change the total head of reservoir')
-parser.add_argument('--skip_resevoir_result', default = True, type = bool, help = 'flag indicates to skip the resevoirs result after simulation')
+parser.add_argument('--skip_resevoir_result', default = False, type = bool, help = 'flag indicates to skip the resevoirs result after simulation')
 parser.add_argument('--update_totalhead_method', default = None, type = str, help = 'update total head of reservor only if gen_res_total_head is True, options: add_max_elevation | None')
 parser.add_argument('--update_res_total_head_json', default = None, type = str, help = 'JSON string. Overriding reservoir totalHead values according to the JSON file. Set None if unsed. Default is None')
 

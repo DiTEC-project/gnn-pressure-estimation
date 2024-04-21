@@ -108,8 +108,7 @@ def select_model(args: argparse.Namespace, test_model_variant_name: str=None, re
 
     if hasattr(args,'model_path'):
         old_model_path = args.model_path
-
-    print(f'before-args.model_path = {args.model_path}')
+        print(f'before-args.model_path = {args.model_path}')
     assert model in ['gatres_small','gatres_large','gin','graphconvwat','chebnet','mgcn','gcn2','gat']
     if model == 'gatres_small':
         args,model= config_gatres_small(args,test_model_variant_name)
