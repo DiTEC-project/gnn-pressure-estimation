@@ -274,7 +274,7 @@ def internal_train(args: argparse.Namespace,
                    train_ds: WDNDataset, 
                    val_ds: WDNDataset,
                    test_ds: WDNDataset, 
-                   do_load: bool=True) ->[]:
+                   do_load: bool=True) -> tuple[float, dict, dict] :
     """perform a full train
 
     Args:
@@ -365,7 +365,7 @@ def internal_train(args: argparse.Namespace,
     
     best_loss = np.inf
     best_epoch = 0
-
+    best_metric_dict =  best_record_metric_dict  = {}
     start_time = time.time()
     dt1 = datetime.fromtimestamp(start_time)
     print('Start time:', dt1)
@@ -491,16 +491,18 @@ def internal_train(args: argparse.Namespace,
     ###################
     #TEST HERE
     ###################
-
-    trained_model,_ = load_checkpoint(path=os.path.join(args.save_path,f"best_{args.model_name}_{args.variant}.pth"), model=model)
-    # by default, testing is clean and unshared mask
-    testing_args = evaluation.convert_train_2_test_arguments(args)
-    
-    return evaluation.internal_test(args=testing_args,
-                         model=trained_model,
-                         train_ds=train_ds,
-                         test_ds=test_ds,
-                         do_load=False)
+    if args.do_test:
+        trained_model,_ = load_checkpoint(path=os.path.join(args.save_path,f"best_{args.model_name}_{args.variant}.pth"), model=model)
+        # by default, testing is clean and unshared mask
+        testing_args = evaluation.convert_train_2_test_arguments(args)
+        
+        return evaluation.internal_test(args=testing_args,
+                            model=trained_model,
+                            train_ds=train_ds,
+                            test_ds=test_ds,
+                            do_load=False)
+    else:
+        return best_loss, best_metric_dict, best_record_metric_dict 
 
     
 def train(args: argparse.Namespace, model: torch.nn.Module =None, do_load=True):
@@ -522,6 +524,7 @@ def get_arguments(raw_args):
     parser.add_argument('--mask_rate',default= 0.95,type=float, help="masking ratio. Default is 0.95")
     parser.add_argument('--dataset_paths',default=['datasets/ctown.zip'],type=str, nargs='*', action='store', help="list of dataset paths used for training and validation (order-sensitive)")
     parser.add_argument('--input_paths',default=['inputs/ctown.inp'],type=str, nargs='*', action='store', help="list of WDN input paths used for training and validation (order-sensitive)")
+    parser.add_argument('--do_test',default= False,type=bool, help="after training, we evaluate the model on clean or noisy tests. However, we should evaluate a different pipeline. As such, this flag is set to False by default.")
     parser.add_argument('--test_data_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\0k288_hp_EPYNET_fullnodetime_Val-GEN-09 Oosterbeek_31032023.zip",type=str, help="timed dataset path for testing")
     parser.add_argument('--test_input_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\WDN input files\Val-GEN-09Oosterbeek_20233101.inp",type=str, help="timed input path for testing")
     parser.add_argument('--feature',default= "pressure", choices=["pressure", "head"], type=str, help="feature input")
