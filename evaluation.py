@@ -100,7 +100,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
         if args.test_type in ['noisy11','noisyNN']:
             test_ds = [NoisyWDNDataset(input_paths=args.input_paths, #<- it assumely has 1 single snapshot
                                 feature=args.feature,
-                                num_records=None,
+                                num_records=args.num_tests,
                                 removal='keep_junction',
                                 do_scale=True,
                                 mean=train_ds.mean,
@@ -120,7 +120,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
         else: #clean 
             test_ds = NoisyWDNDataset(input_paths=args.input_paths, #<- it assumely has 1 single snapshot
                                 feature=args.feature,
-                                num_records=None,
+                                num_records=args.num_tests,
                                 removal='keep_junction',
                                 do_scale=True,
                                 mean=train_ds.mean,
@@ -141,7 +141,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
         if args.test_type in ['noisy11','noisyNN']:
             test_ds = [NoisyWDNDataset(input_paths=[args.test_input_path],
                                 feature=args.feature,
-                                num_records=None,
+                                num_records=args.num_tests,
                                 removal='keep_junction',
                                 do_scale=True,
                                 mean=train_ds.mean,
@@ -158,23 +158,65 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
                                 mean_dmd=mean_dmd ,
                                 std_dmd=std_dmd,
                                 ) for _ in range(args.num_test_trials)]
-        
         else: #clean
-            test_ds = get_stacked_set2(zip_file_path=args.test_data_path,#fullnode
-                                        input_path=args.test_input_path,
-                                        feature=args.feature,
-                                        num_tests= args.num_tests,
-                                        edge_attrs=edge_attrs,
-                                        train_mean=train_ds.mean,
-                                        train_std=train_ds.std,
-                                        train_max=train_ds.max,
-                                        train_min=train_ds.min,
-                                        train_edge_mean=train_ds.edge_mean,
-                                        train_edge_std=train_ds.edge_std, 
-                                        train_edge_max=train_ds.edge_max,
-                                        train_edge_min=train_ds.edge_min,
-                                        norm_type=args.norm_type,
-                                        removal='keep_junction')
+            if args.test_from_set != 'all':
+                if args.test_from_set == 'inp':
+                    test_ds = NoisyWDNDataset(input_paths=[args.test_input_path],
+                                feature=args.feature,
+                                num_records=args.num_tests,
+                                removal='keep_junction',
+                                do_scale=True,
+                                mean=train_ds.mean,
+                                std=train_ds.std,
+                                min=train_ds.min,
+                                max=train_ds.max,
+                                lazy_convert_pygdata=False,
+                                edge_attrs=edge_attrs,
+                                edge_mean=train_ds.edge_mean,
+                                edge_std=train_ds.edge_std,
+                                edge_min=train_ds.edge_min,
+                                edge_max=train_ds.edge_max,
+                                norm_type=args.norm_type,
+                                mean_dmd=0. ,
+                                std_dmd=0.,
+                                )
+                else:
+                    test_ds = WDNDataset(zip_file_paths=[args.test_data_path],
+                            input_paths=[args.test_input_path],
+                            feature=args.feature,
+                            from_set=args.test_from_set,
+                            num_records=args.num_tests,
+                            removal='keep_junction',
+                            do_scale=True,
+                            mean=train_ds.mean,
+                            std=train_ds.std,
+                            min=train_ds.min,
+                            max=train_ds.max,
+                            lazy_convert_pygdata=False,
+                            edge_attrs=edge_attrs,
+                            edge_mean=train_ds.edge_mean,
+                            edge_std=train_ds.edge_std,
+                            edge_min=train_ds.edge_min,
+                            edge_max=train_ds.edge_max,
+                            norm_type=args.norm_type,
+                            )
+                
+            else:
+                test_ds = get_stacked_set2(zip_file_path=args.test_data_path,#fullnode
+                                            input_path=args.test_input_path,
+                                            feature=args.feature,
+                                            num_tests= args.num_tests,
+                                            edge_attrs=edge_attrs,
+                                            train_mean=train_ds.mean,
+                                            train_std=train_ds.std,
+                                            train_max=train_ds.max,
+                                            train_min=train_ds.min,
+                                            train_edge_mean=train_ds.edge_mean,
+                                            train_edge_std=train_ds.edge_std, 
+                                            train_edge_max=train_ds.edge_max,
+                                            train_edge_min=train_ds.edge_min,
+                                            norm_type=args.norm_type,
+                                            removal='keep_junction')
     return train_ds, test_ds
 
 def test_one_epoch(model:torch.nn.Module,
@@ -761,7 +803,6 @@ def get_arguments(raw_args):
         parser.add_argument('--model_name',default=None,type=str, help="Name of model ")
         parser.add_argument('--criterion',default='mse',type=str, help="criterion loss. Support mse|sce|mae")
         parser.add_argument('--num_trains',default=None, type=int, help="Number of train records. Set None to use all")
-        parser.add_argument('--num_tests',default=None, type=int, help="Number of test records. Set None to use all")
         parser.add_argument('--batch_size',default=80, type=int, help="batch size")
         parser.add_argument('--use_data_batch',default=False, type=bool, help="pass pyg data batch as parameter")
         parser.add_argument('--use_data_edge_attrs',default=None, type=str, help="pass pyg data edge attributes. Support: diameter| length| None")
@@ -778,7 +819,9 @@ def get_arguments(raw_args):
         parser.add_argument('--use_same_mask',default=False, type=bool, help="Flag indicates whether a single mask is applied to all snapshots in a test scenario. Default is False")
         parser.add_argument('--test_single_snapshot',default=False, type=bool, help="Flag indicates whether testing on a single snapshot. If yes, we take dataset_paths[0] as the testing input path because it assumely has only one snapshot ")
         parser.add_argument('--test_norm_type',default='znorm', type=str, help="normalization type. Support znorm| minmax| unused")
-        
+        parser.add_argument('--test_from_set',default='all', type=str,  choices=['all','train','valid','test','inp'],help="ONLY FOR CLEAN TEST. Test on which set. Default is all")
+        parser.add_argument('--num_tests',default=None, type=int, help="ONLY FOR CLEAN TEST. Number of test records. Set None to use all. ")
+
         args = parser.parse_args(args=raw_args)
         return args
 
