@@ -27,7 +27,7 @@ from copy import deepcopy
 from utils.auxil import  scale, nx_to_pyg
 
 
-from typing import Union,Any
+from typing import Optional, Union,Any
 
 
 def get_graph_template(new_graph: nx.Graph, edge_attrs:bool = False) -> 'torch_geometric.data.Data':
@@ -505,3 +505,96 @@ def get_stacked_set(
     test_ds = test_ds +  test_train_ds + test_valid_ds
 
     return test_ds
+
+
+def get_stacked_set2(
+    zip_file_path: str,
+    input_path: str,
+    train_mean: Any,
+    train_std:Any,
+    train_min:Any,
+    train_max:Any,
+    train_edge_mean:Any,
+    train_edge_std:Any,
+    train_edge_min:Any,
+    train_edge_max:Any,
+    norm_type:str,
+    edge_attrs:list[str],
+    feature: str='pressure',
+    num_tests: Optional[int] = None,
+    removal : str ='keep_list'): 
+    current_records = 0
+    test_train_ds = WDNDataset(zip_file_paths=[zip_file_path],
+                          input_paths=[input_path],
+                          feature=feature,
+                          from_set='train',
+                          num_records=num_tests,
+                          removal=removal,
+                          do_scale=True,
+                          mean=train_mean,
+                          std=train_std,
+                          min=train_min,
+                          max=train_max,
+                          lazy_convert_pygdata=False,
+                          edge_attrs=edge_attrs,
+                          edge_mean=train_edge_mean,
+                          edge_std=train_edge_std,
+                          edge_min=train_edge_min,
+                          edge_max=train_edge_max,
+                          norm_type=norm_type,
+                          )
+    current_records += len(test_train_ds)
+    ret_test_ds =  test_train_ds 
+
+    if num_tests is not None and current_records < num_tests:
+        residual = num_tests - current_records 
+        test_valid_ds = WDNDataset(zip_file_paths=[zip_file_path],
+                                input_paths=[input_path],
+                                feature=feature,
+                                from_set='valid',
+                                num_records=residual,
+                                removal=removal,
+                                do_scale=True,
+                                mean=train_mean,
+                                std=train_std,
+                                min=train_min,
+                                max=train_max,
+                                lazy_convert_pygdata=False,
+                                edge_attrs=edge_attrs,
+                                edge_mean=train_edge_mean,
+                                edge_std=train_edge_std,
+                                edge_min=train_edge_min,
+                                edge_max=train_edge_max,
+                                norm_type=norm_type,
+                                )
+        current_records += len(test_valid_ds)
+        ret_test_ds = ret_test_ds + test_valid_ds 
+
+    if num_tests is not None and current_records < num_tests:
+        residual = num_tests - current_records 
+        test_ds = WDNDataset(zip_file_paths=[zip_file_path],
+                                input_paths=[input_path],
+                                feature=feature,
+                                from_set='test',
+                                num_records=residual,
+                                removal=removal,
+                                do_scale=True,
+                                mean=train_mean,
+                                std=train_std,
+                                min=train_min,
+                                max=train_max,
+                                lazy_convert_pygdata=False,
+                                edge_attrs=edge_attrs,
+                                edge_mean=train_edge_mean,
+                                edge_std=train_edge_std,
+                                edge_min=train_edge_min,
+                                edge_max=train_edge_max,
+                                norm_type=norm_type,
+                            )
+        current_records += len(test_valid_ds)
+        ret_test_ds = ret_test_ds + test_ds 
+
+    if num_tests is not None:
+        print(f'Test set length: actual: {current_records} / Expected : {num_tests}')
+
+    return ret_test_ds

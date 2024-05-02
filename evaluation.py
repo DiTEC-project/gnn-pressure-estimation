@@ -13,7 +13,7 @@ import wandb
 from datetime import datetime
 import torch
 import torch.nn.functional as F
-from utils.DataLoader import WDNDataset, NoisyWDNDataset, get_stacked_set
+from utils.DataLoader import WDNDataset, NoisyWDNDataset, get_stacked_set2
 from utils.auxil import *
 from utils.timer import Timer
 import epynet
@@ -55,11 +55,13 @@ def get_sensors(test_input_path:str, feature:str, include_reservoir:bool)-> tupl
             assert required_idx,'The WDN has no required uids. Please correct the input file path.'
             return required_idx, required_uids
         except ImportError:
-            print('Warning! Secrets are not found! Sensors are unavailable! The results will be similar to all cases')
+            print('Warning! Secrets are not found! Sensors are unavailable! The results will be similar to all cases! Return w/o inference!')
             return [], [] 
     
     else:
-        raise NotImplementedError('put sensor ids and its uids here')
+        #raise NotImplementedError('put sensor ids and its uids here')
+        print('ERROR! Sensors or secrets are not found!Return w/o train!Return w/o inference!')
+        return [], [] 
 
 def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> tuple[WDNDataset, WDNDataset]:
     """support function to get default dataset preparing for an evaluation
@@ -156,10 +158,12 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
                                 mean_dmd=mean_dmd ,
                                 std_dmd=std_dmd,
                                 ) for _ in range(args.num_test_trials)]
+        
         else: #clean
-            test_ds = get_stacked_set(zip_file_path=args.test_data_path,#fullnode
+            test_ds = get_stacked_set2(zip_file_path=args.test_data_path,#fullnode
                                         input_path=args.test_input_path,
                                         feature=args.feature,
+                                        num_tests= args.num_tests,
                                         edge_attrs=edge_attrs,
                                         train_mean=train_ds.mean,
                                         train_std=train_ds.std,
@@ -169,8 +173,8 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
                                         train_edge_std=train_ds.edge_std, 
                                         train_edge_max=train_ds.edge_max,
                                         train_edge_min=train_ds.edge_min,
-                                        norm_type=args.norm_type,)
-        
+                                        norm_type=args.norm_type,
+                                        removal='keep_junction')
     return train_ds, test_ds
 
 def test_one_epoch(model:torch.nn.Module,
@@ -757,6 +761,7 @@ def get_arguments(raw_args):
         parser.add_argument('--model_name',default=None,type=str, help="Name of model ")
         parser.add_argument('--criterion',default='mse',type=str, help="criterion loss. Support mse|sce|mae")
         parser.add_argument('--num_trains',default=None, type=int, help="Number of train records. Set None to use all")
+        parser.add_argument('--num_tests',default=None, type=int, help="Number of test records. Set None to use all")
         parser.add_argument('--batch_size',default=80, type=int, help="batch size")
         parser.add_argument('--use_data_batch',default=False, type=bool, help="pass pyg data batch as parameter")
         parser.add_argument('--use_data_edge_attrs',default=None, type=str, help="pass pyg data edge attributes. Support: diameter| length| None")
@@ -772,6 +777,7 @@ def get_arguments(raw_args):
         parser.add_argument('--gpu_warmup_times',default=10, type=int, help="Perform warmup inference N times before measuring latency and throughput")
         parser.add_argument('--use_same_mask',default=False, type=bool, help="Flag indicates whether a single mask is applied to all snapshots in a test scenario. Default is False")
         parser.add_argument('--test_single_snapshot',default=False, type=bool, help="Flag indicates whether testing on a single snapshot. If yes, we take dataset_paths[0] as the testing input path because it assumely has only one snapshot ")
+        parser.add_argument('--test_norm_type',default='znorm', type=str, help="normalization type. Support znorm| minmax| unused")
         
         args = parser.parse_args(args=raw_args)
         return args

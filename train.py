@@ -520,7 +520,7 @@ def get_arguments(raw_args):
     parser.add_argument('--model',default='gatres_small',type=str,choices=['gatres_small','gatres_large','gin','graphconvwat','chebnet','mgcn','gcn2','gat'], help="support model selection only.")
     parser.add_argument('--lr',default=0.0005,type=float, help="Learning rate. Default is 0.0005")
     parser.add_argument('--weight_decay',default=0.000006,type=float, help="weight decay. Default is 0.000006")
-    parser.add_argument('--epochs',default=5,type=int, help="number of epochs to train the model")
+    parser.add_argument('--epochs',default=2,type=int, help="number of epochs to train the model")
     parser.add_argument('--mask_rate',default= 0.95,type=float, help="masking ratio. Default is 0.95")
     parser.add_argument('--dataset_paths',default=['datasets/ctown.zip'],type=str, nargs='*', action='store', help="list of dataset paths used for training and validation (order-sensitive)")
     parser.add_argument('--input_paths',default=['inputs/ctown.inp'],type=str, nargs='*', action='store', help="list of WDN input paths used for training and validation (order-sensitive)")
@@ -528,11 +528,11 @@ def get_arguments(raw_args):
     parser.add_argument('--test_data_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\0k288_hp_EPYNET_fullnodetime_Val-GEN-09 Oosterbeek_31032023.zip",type=str, help="timed dataset path for testing")
     parser.add_argument('--test_input_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\WDN input files\Val-GEN-09Oosterbeek_20233101.inp",type=str, help="timed input path for testing")
     parser.add_argument('--feature',default= "pressure", choices=["pressure", "head"], type=str, help="feature input")
-    parser.add_argument('--variant',default= '',type=str, help="Please give a value for model's variant")
+    parser.add_argument('--variant',default= f'{datetime.today().strftime("%Y%m%d_%H%M")}',type=str, help="Please give a value for model's variant")
     parser.add_argument('--model_name',default=None,type=str, help="Name of model. Keep its empty to use the name of class by default")
     parser.add_argument('--criterion',default='mse', choices=["mse", "mae", 'sce'],type=str, help="criterion loss. Support mse|sce|mae")
-    parser.add_argument('--num_trains',default=4, type=int, help="Number of train records. Set None to use all")
-    parser.add_argument('--batch_size',default=2, type=int, help="batch size")
+    parser.add_argument('--num_trains',default=2, type=int, help="Number of train records. Set None to use all")
+    parser.add_argument('--batch_size',default=1, type=int, help="batch size")
     parser.add_argument('--use_data_batch',default=False, type=bool, help="pass pyg data batch as parameter")
     parser.add_argument('--use_data_edge_attrs',default=None, type=str, help="pass pyg data edge attributes. Support: diameter| length| None")
     parser.add_argument('--patience',default=100, type=int, help="Early stopping patience in these epochs. If val_loss unchanges, the training is stopped")
@@ -551,6 +551,7 @@ def get_arguments(raw_args):
     parser.add_argument('--save_path',default='experiments_logs/test_args/fun_test', type=str, help="Path to store model weights")
     #########################################
     parser.add_argument('--num_test_trials',default=10, type=str, help="Repeat the inference on test set N times with diff masks. The report will include mean and std in N times")
+    parser.add_argument('--model_path',default='', type=str, help="Model path")
     
     args = parser.parse_args(args=raw_args)
     return args
@@ -566,7 +567,7 @@ if __name__ == "__main__":
     #get default argument and parse from terminal
     args = get_arguments(sys.argv[1:])
     #select based on 
-    args, model = select_model(args,None)
+    args, model = select_model(args,None, args.model_path != '')
     #train
     train(args,model=model,do_load=False)
 
