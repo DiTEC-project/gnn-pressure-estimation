@@ -24,14 +24,14 @@ from utils.early_stopping import EarlyStopping
 from utils.gradient_clipping import GradientClipping
 from utils.auxil import *
 from utils.DataLoader import WDNDataset,  get_stacked_set
-from typing import Callable
+from typing import Callable, Optional
 import evaluation
 from ConfigModels import select_model, config_gatres_small
 torch.cuda.empty_cache()
 gc.collect()
 
 
-def get_default_datasets(args: argparse.Namespace)-> tuple[WDNDataset, WDNDataset, WDNDataset]:
+def get_default_datasets(args: argparse.Namespace)-> tuple[WDNDataset, WDNDataset, Optional[WDNDataset]]:
     """get default datasets for training
 
     Args:
@@ -94,7 +94,11 @@ def get_default_datasets(args: argparse.Namespace)-> tuple[WDNDataset, WDNDatase
                                 train_edge_std=train_ds.edge_std, 
                                 train_edge_max=train_ds.edge_max,
                                 train_edge_min=train_ds.edge_min,
-                                norm_type=args.norm_type,)
+                                norm_type=args.norm_type,
+                                removal=args.test_removal) if args.do_test else None
+    
+
+    
     return train_ds, val_ds, test_ds
 
 def train_one_epoch(model: torch.nn.Module,
@@ -273,7 +277,7 @@ def internal_train(args: argparse.Namespace,
                    model: torch.nn.Module, 
                    train_ds: WDNDataset, 
                    val_ds: WDNDataset,
-                   test_ds: WDNDataset, 
+                   test_ds: Optional[WDNDataset], 
                    do_load: bool=True) -> tuple[float, dict, dict] :
     """perform a full train
 
@@ -294,7 +298,7 @@ def internal_train(args: argparse.Namespace,
     
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False)
-    test_loader = DataLoader(test_ds, batch_size=16, shuffle=False)
+    #test_loader = DataLoader(test_ds, batch_size=16, shuffle=False)
     
     if args.device == 'cuda':
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -492,6 +496,7 @@ def internal_train(args: argparse.Namespace,
     #TEST HERE
     ###################
     if args.do_test:
+        assert test_ds is not None
         trained_model,_ = load_checkpoint(path=os.path.join(args.save_path,f"best_{args.model_name}_{args.variant}.pth"), model=model)
         # by default, testing is clean and unshared mask
         testing_args = evaluation.convert_train_2_test_arguments(args)
@@ -525,8 +530,9 @@ def get_arguments(raw_args):
     parser.add_argument('--dataset_paths',default=['datasets/ctown.zip'],type=str, nargs='*', action='store', help="list of dataset paths used for training and validation (order-sensitive)")
     parser.add_argument('--input_paths',default=['inputs/ctown.inp'],type=str, nargs='*', action='store', help="list of WDN input paths used for training and validation (order-sensitive)")
     parser.add_argument('--do_test',default= False,type=bool, help="after training, we evaluate the model on clean or noisy tests. However, we should evaluate a different pipeline. As such, this flag is set to False by default.")
-    parser.add_argument('--test_data_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\0k288_hp_EPYNET_fullnodetime_Val-GEN-09 Oosterbeek_31032023.zip",type=str, help="timed dataset path for testing")
-    parser.add_argument('--test_input_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\WDN input files\Val-GEN-09Oosterbeek_20233101.inp",type=str, help="timed input path for testing")
+    parser.add_argument('--test_data_path',default= r'datasets/ctown.zip',type=str, help="timed dataset path for testing")
+    parser.add_argument('--test_input_path',default= r'inputs/ctown.inp',type=str, help="timed input path for testing")
+    parser.add_argument('--test_removal',default='keep_junction',type=str, choices=["keep_all", "keep_list", "keep_junction", "reservoir", "tank"], help="Node removal strategy to remove different nodal types in the water network. If you don't know, use keep_junction")
     parser.add_argument('--feature',default= "pressure", choices=["pressure", "head"], type=str, help="feature input")
     parser.add_argument('--variant',default= f'{datetime.today().strftime("%Y%m%d_%H%M")}',type=str, help="Please give a value for model's variant")
     parser.add_argument('--model_name',default=None,type=str, help="Name of model. Keep its empty to use the name of class by default")
@@ -537,7 +543,7 @@ def get_arguments(raw_args):
     parser.add_argument('--use_data_edge_attrs',default=None, type=str, help="pass pyg data edge attributes. Support: diameter| length| None")
     parser.add_argument('--patience',default=100, type=int, help="Early stopping patience in these epochs. If val_loss unchanges, the training is stopped")
     parser.add_argument('--min_delta',default=1e-4, type=float, help="delta between last_loss and best_loss")
-    parser.add_argument('--train_val_removal',default='keep_list', choices=["keep_all", "keep_list", "keep_junction", "reservoir", "tank"], type=str, help="simple-keep_all, tough-keep_list. Node removal strategy to remove different nodal types in the water network. Support: keep_list| reservoir| tank| keep_junction| keep_all")
+    parser.add_argument('--train_val_removal',default='keep_junction', choices=["keep_all", "keep_list", "keep_junction", "reservoir", "tank"], type=str, help="simple-keep_all, tough-keep_list. Node removal strategy to remove different nodal types in the water network. Support: keep_list| reservoir| tank| keep_junction| keep_all")
     parser.add_argument('--device',default='cuda', type=str, choices=['cuda','cpu'], help="Training device. If gpu is unavailable, device is set to cpu. Support: cuda| cpu")
     parser.add_argument('--use_gradient_clipping',default=False, type=bool, help="Flag indicates gradient clipping is used in training")
     parser.add_argument('--percentile',default=10., type=float, help="percentile from historical gradients used for gradient clipping. Only used when use_gradient_clipping is True")

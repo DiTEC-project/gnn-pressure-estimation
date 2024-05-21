@@ -101,7 +101,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
             test_ds = [NoisyWDNDataset(input_paths=args.input_paths, #<- it assumely has 1 single snapshot
                                 feature=args.feature,
                                 num_records=args.num_tests,
-                                removal='keep_junction',
+                                removal= args.test_removal,
                                 do_scale=True,
                                 mean=train_ds.mean,
                                 std=train_ds.std,
@@ -121,7 +121,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
             test_ds = NoisyWDNDataset(input_paths=args.input_paths, #<- it assumely has 1 single snapshot
                                 feature=args.feature,
                                 num_records=args.num_tests,
-                                removal='keep_junction',
+                                removal= args.test_removal,
                                 do_scale=True,
                                 mean=train_ds.mean,
                                 std=train_ds.std,
@@ -142,7 +142,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
             test_ds = [NoisyWDNDataset(input_paths=[args.test_input_path],
                                 feature=args.feature,
                                 num_records=args.num_tests,
-                                removal='keep_junction',
+                                removal= args.test_removal,
                                 do_scale=True,
                                 mean=train_ds.mean,
                                 std=train_ds.std,
@@ -164,7 +164,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
                     test_ds = NoisyWDNDataset(input_paths=[args.test_input_path],
                                 feature=args.feature,
                                 num_records=args.num_tests,
-                                removal='keep_junction',
+                                removal= args.test_removal,
                                 do_scale=True,
                                 mean=train_ds.mean,
                                 std=train_ds.std,
@@ -186,7 +186,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
                             feature=args.feature,
                             from_set=args.test_from_set,
                             num_records=args.num_tests,
-                            removal='keep_junction',
+                            removal= args.test_removal,
                             do_scale=True,
                             mean=train_ds.mean,
                             std=train_ds.std,
@@ -216,7 +216,7 @@ def get_default_datasets(args: argparse.Namespace, mean_dmd=0.1, std_dmd=1.)-> t
                                             train_edge_max=train_ds.edge_max,
                                             train_edge_min=train_ds.edge_min,
                                             norm_type=args.norm_type,
-                                            removal='keep_junction')
+                                            removal= args.test_removal,)
     return train_ds, test_ds
 
 def test_one_epoch(model:torch.nn.Module,
@@ -789,15 +789,15 @@ def get_arguments(raw_args):
         parser.add_argument('--model',default='gatres_small',type=str,choices=['gatres_small','gatres_large','gin','graphconvwat','chebnet','mgcn','gcn2','gat'], help="support model selection only.")
         parser.add_argument('--model_path',default='',type=str, help="path to load the trained weights")
         parser.add_argument('--mask_rate',default= 0.95,type=float, help="Please give a value for mask_rate")
-        parser.add_argument('--dataset_paths',default=[r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\10k_p_EPYNET_n_GEN-09 Oosterbeek_03022023.zip",
-                                                    #r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\Generalization\50k_hp_EPYNET_simple_ky13_10032023.zip"
+        parser.add_argument('--dataset_paths',default=[r"",
                                                     ],type=str, nargs='*', action='store', help="list of dataset paths used for training and validation (order-sensitive)")
         
-        parser.add_argument('--input_paths',default=[r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\WDN input files\GEN-09 Oosterbeek.inp"
+        parser.add_argument('--input_paths',default=[r""
                                                     ],type=str, nargs='*', action='store', help="list of WDN input paths used for training and validation (order-sensitive)")
         
-        parser.add_argument('--test_data_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\0k288_hp_EPYNET_fullnodetime_Val-GEN-09 Oosterbeek_31032023.zip",type=str, help="timed dataset path for testing") #24hour
-        parser.add_argument('--test_input_path',default= r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\WDN input files\Val-GEN-09Oosterbeek_20233101.inp",type=str, help="timed input path for testing")
+        parser.add_argument('--test_data_path',default= r"",type=str, help="timed dataset path for testing") #24hour
+        parser.add_argument('--test_input_path',default= r"",type=str, help="timed input path for testing")
+        parser.add_argument('--test_removal',default='keep_junction',type=str, choices=["keep_all", "keep_list", "keep_junction", "reservoir", "tank"], help="Node removal strategy to remove different nodal types in the water network. If you don't know, use keep_junction")
         parser.add_argument('--feature',default= "pressure", choices=["pressure", "head"], type=str, help="feature input")
         parser.add_argument('--variant',default= datetime.now().strftime('%Y%M%d'),type=str, help="Please give a value for model's variant")
         parser.add_argument('--model_name',default=None,type=str, help="Name of model ")
