@@ -75,8 +75,8 @@ python train.py --model gatres_small
                 --batch_size 8
                 --device 'cuda'
                 --mask_rate 0.95
-                --datasets_paths <dataset_path1> <dataset_path2>
-                --input_paths <inp_path1> <inp_path2>
+                --datasets_paths <dataset_path1> <optional_dataset_path2> ...
+                --input_paths <inp_path1> <optional_inp_path2> ...
                 --test_data_path <test_dataset_path>
                 --test_input_path <test_dataset_path>
                 --save_path <where_to_save_checkpoints>
