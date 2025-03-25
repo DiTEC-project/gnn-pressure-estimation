@@ -1,13 +1,18 @@
 [tool.poetry]
 name = "gnn_pressure_estimation"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
-authors = ["cuongth95 <truonghuycuong95@gmail.com>"]
+authors = ["cuongth95 <truonghuycuong95@gmail.com>", "atello <a.tello@rug.nl>"]
 license = "MIT"
 readme = "README.md"
+packages = [
+    { include = "gnn_pressure_estimation" },
+    { include = "gnn_pressure_estimation/**/*.py" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+
 
 [build-system]
 requires = ["poetry-core"]
