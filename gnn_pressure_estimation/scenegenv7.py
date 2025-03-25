@@ -15,7 +15,6 @@
 import sys
 
 # setting path
-sys.path.append("../gnn-pressure-estimation")
 from generator.EPYNET.TokenGeneratorByRange import *
 import argparse
 import os
@@ -26,6 +25,7 @@ import matplotlib.pyplot as plt
 from time import time
 from tqdm import tqdm
 from generator.EPYNET.Executorv7 import *
+from utils.auxil import pretty_print
 import ray
 import pandas as pd
 from ray.exceptions import RayError
@@ -45,26 +45,33 @@ if __name__ == "__main__":
     )
 
     # removal flags
-    parser.add_argument("--remove_pattern", default=True, type=bool, help="flag indicates to remove any pattern in input file")
-    parser.add_argument("--remove_control", default=False, type=bool, help="flag indicates to remove any control in input file")
+    parser.add_argument(
+        "--remove_pattern", default=True, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to remove any pattern in input file"
+    )
+    parser.add_argument(
+        "--remove_control", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to remove any control in input file"
+    )
     parser.add_argument(
         "--remove_rule",
         default=False,
         type=bool,
+        action=argparse.BooleanOptionalAction,
         help="flag indicates to remove any rule in input file! Note EPANET authors confuse control and rule",
     )
 
     # demands settings
     parser.add_argument(
         "--gen_demand",
-        default=True,
+        default=False,
         type=bool,
+        action=argparse.BooleanOptionalAction,
         help="If true, replacing nonzero base demand to 1.0 | ELSE, replacing ALL base demands to 1.0. Default is False",
     )
     parser.add_argument(
         "--replace_nonzero_basedmd",
         default=False,
         type=bool,
+        action=argparse.BooleanOptionalAction,
         help="If true, replacing nonzero base demand to 1.0 | ELSE, replacing ALL base demands to 1.0. Default is False",
     )
     parser.add_argument(
@@ -75,7 +82,9 @@ if __name__ == "__main__":
     )
 
     # elevation settings
-    parser.add_argument("--gen_elevation", default=False, type=bool, help="flag indicates to change the nodal elevation")
+    parser.add_argument(
+        "--gen_elevation", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the nodal elevation"
+    )
     parser.add_argument("--ele_kmean_init", default="k-means++", type=str, help="Initialization of K-mean for elevation cluster = k-means++ | random")
     parser.add_argument(
         "--update_elevation_method",
@@ -92,13 +101,21 @@ if __name__ == "__main__":
     )
 
     # pipe settings
-    parser.add_argument("--gen_roughness", default=False, type=bool, help="flag indicates to change the pipe roughness")
-    parser.add_argument("--gen_diameter", default=False, type=bool, help="flag indicates to change the pipe diameter")
+    parser.add_argument(
+        "--gen_roughness", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the pipe roughness"
+    )
+    parser.add_argument(
+        "--gen_diameter", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the pipe diameter"
+    )
     parser.add_argument(
         "--dia_kmean_init", default="k-means++", type=str, help="(UNSED)Initialization of K-mean for diameter cluster = k-means++ | random"
     )
-    parser.add_argument("--gen_length", default=False, type=bool, help="flag indicates to change the pipe roughness")
-    parser.add_argument("--gen_minorloss", default=False, type=bool, help="flag indicates to change the pipe diameter")
+    parser.add_argument(
+        "--gen_length", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the pipe roughness"
+    )
+    parser.add_argument(
+        "--gen_minorloss", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the pipe diameter"
+    )
     parser.add_argument(
         "--update_pipe_roughness_json",
         default=None,
@@ -125,9 +142,19 @@ if __name__ == "__main__":
     )
 
     # valve settings
-    parser.add_argument("--gen_valve_init_status", default=True, type=bool, help="flag indicates to change the valve init status")
-    parser.add_argument("--gen_valve_setting", default=True, type=bool, help="flag indicates to change the valve settings")
-    parser.add_argument("--gen_valve_diameter", default=False, type=bool, help="flag indicates to change the valve diameter")
+    parser.add_argument(
+        "--gen_valve_init_status",
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="flag indicates to change the valve init status",
+    )
+    parser.add_argument(
+        "--gen_valve_setting", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the valve settings"
+    )
+    parser.add_argument(
+        "--gen_valve_diameter", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the valve diameter"
+    )
     parser.add_argument(
         "--update_valve_init_status_json",
         default=None,
@@ -148,9 +175,19 @@ if __name__ == "__main__":
     )
 
     # pump settings
-    parser.add_argument("--gen_pump_init_status", default=False, type=bool, help="flag indicates to change the pump init status")
-    parser.add_argument("--gen_pump_speed", default=True, type=bool, help="flag indicates to change the pump speed")
-    parser.add_argument("--gen_pump_length", default=False, type=bool, help="flag indicates to change the pump length")
+    parser.add_argument(
+        "--gen_pump_init_status",
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="flag indicates to change the pump init status",
+    )
+    parser.add_argument(
+        "--gen_pump_speed", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the pump speed"
+    )
+    parser.add_argument(
+        "--gen_pump_length", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the pump length"
+    )
     parser.add_argument(
         "--update_pump_init_status_json",
         default=None,
@@ -171,9 +208,15 @@ if __name__ == "__main__":
     )
 
     # tank settings
-    parser.add_argument("--gen_tank_level", default=True, type=bool, help="flag indicates to change the tank level")
-    parser.add_argument("--gen_tank_elevation", default=False, type=bool, help="flag indicates to change the tank elevation")
-    parser.add_argument("--gen_tank_diameter", default=False, type=bool, help="flag indicates to change the tank diameter")
+    parser.add_argument(
+        "--gen_tank_level", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the tank level"
+    )
+    parser.add_argument(
+        "--gen_tank_elevation", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the tank elevation"
+    )
+    parser.add_argument(
+        "--gen_tank_diameter", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag indicates to change the tank diameter"
+    )
     parser.add_argument(
         "--update_tank_level_json",
         default=None,
@@ -194,8 +237,20 @@ if __name__ == "__main__":
     )
 
     # reservoir settings
-    parser.add_argument("--gen_res_total_head", default=True, type=bool, help="flag indicates to change the total head of reservoir")
-    parser.add_argument("--skip_resevoir_result", default=False, type=bool, help="flag indicates to skip the resevoirs result after simulation")
+    parser.add_argument(
+        "--gen_res_total_head",
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="flag indicates to change the total head of reservoir",
+    )
+    parser.add_argument(
+        "--skip_resevoir_result",
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="flag indicates to skip the resevoirs result after simulation",
+    )
     parser.add_argument(
         "--update_totalhead_method",
         default=None,
@@ -210,9 +265,15 @@ if __name__ == "__main__":
     )
 
     # settings
-    parser.add_argument("--debug", default=True, type=bool, help="flag allows to print some useful measurements")
     parser.add_argument(
-        "--allow_error", default=False, type=bool, help="flag allows to bypass error scenarios (useful for debug ), defaults to False"
+        "--debug", default=False, type=bool, action=argparse.BooleanOptionalAction, help="flag allows to print some useful measurements"
+    )
+    parser.add_argument(
+        "--allow_error",
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="flag allows to bypass error scenarios (useful for debug ), defaults to False",
     )
     parser.add_argument(
         "--convert_results_by_flow_unit",
@@ -228,7 +289,13 @@ if __name__ == "__main__":
     )  #
 
     # conditions
-    parser.add_argument("--accept_warning_code", default=False, type=bool, help="flag allows to accept warning codes (0 < code < 6)")
+    parser.add_argument(
+        "--accept_warning_code",
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="flag allows to accept warning codes (0 < code < 6)",
+    )
     parser.add_argument(
         "--pressure_lowerbound",
         default=None,
@@ -257,10 +324,16 @@ if __name__ == "__main__":
     parser.add_argument("--train_ratio", default=0.6, type=float, help="the ratio of training scenarios and total")
     parser.add_argument("--valid_ratio", default=0.2, type=float, help="the ratio of validation scenarios and total")
     parser.add_argument(
-        "--is_single_thread", default=False, type=bool, help="run the generation with only a single thread for debugging only. Defaults is False"
+        "--is_single_thread",
+        default=False,
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="run the generation with only a single thread for debugging only. Defaults is False",
     )
 
     args = parser.parse_args(sys.argv[1:])
+
+    pretty_print(vars(args))
 
     config = ConfigParser()
     config.read(args.config)
@@ -470,7 +543,7 @@ if __name__ == "__main__":
         progressbar.close()
         ray.shutdown()
         elapsed_time = time() - sim_start
-        print(f"\nSimulation time: { elapsed_time } seconds")
+        print(f"\nSimulation time: {elapsed_time} seconds")
 
         print(f"Success/Total: {success_scenarios}/{num_scenarios} scenes")
         return success_scenarios, ordered_names_dict
@@ -559,7 +632,7 @@ if __name__ == "__main__":
         ray.shutdown()
 
         elapsed_time = time() - sim_start
-        print(f"\nSimulation time: { elapsed_time } seconds")
+        print(f"\nSimulation time: {elapsed_time} seconds")
         print(f"Process run on {num_batches} batches, total scenes: {backup_num_scenarios}")
         print(f"Success/Expected: {success_scenarios}/{num_scenarios} scenes")
 
@@ -645,7 +718,7 @@ if __name__ == "__main__":
             del root_group["tmp"]
 
             elapsed_time = time() - program_start
-            print(f"\nExecution time: { elapsed_time } seconds")
+            print(f"\nExecution time: {elapsed_time} seconds")
 
             store2 = zarr.ZipStore(saved_path + ".zip", mode="w")
             zarr.copy_store(store, store2, if_exists="replace")

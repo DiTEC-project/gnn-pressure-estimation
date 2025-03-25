@@ -16,8 +16,8 @@ import torch.nn.functional as F
 from utils.DataLoader import WDNDataset, NoisyWDNDataset, get_stacked_set2
 from utils.auxil import *
 from utils.timer import Timer
-import epynet
 from ConfigModels import config_gatres_small, select_model
+import epynet
 from torch_geometric.loader import DataLoader
 from tqdm import tqdm
 from typing import Callable, Any
