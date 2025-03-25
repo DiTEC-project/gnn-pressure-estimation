@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gnn-pressure-estimation"
+name = "gnn_pressure_estimation"
 version = "0.1.0"
 description = ""
 authors = ["cuongth95 <truonghuycuong95@gmail.com>"]
