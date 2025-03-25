@@ -109,13 +109,19 @@ MIT license. See the LICENSE file for more details.
 Please cite the following paper if you use the **GATRes** model or the **Data Generation Tool** in your research:
 
 ```
-@misc{truong2023graph,
-    title={Graph Neural Networks for Pressure Estimation in Water Distribution Systems}, 
-    author={Huy Truong and Andr\'{e}s Tello and Alexander Lazovik and Victoria Degeler},
-    year={2023},
-    eprint={2311.10579},
-    archivePrefix={arXiv},
-    primaryClass={cs.LG},
-    note = {submitted to Water Resources Research}
+@article{truong2024gatres,
+    author = {Truong, Huy and Tello, Andrés and Lazovik, Alexander and Degeler, Victoria},
+    title = {Graph Neural Networks for Pressure Estimation in Water Distribution Systems},
+    journal = {Water Resources Research},
+    volume = {60},
+    number = {7},
+    pages = {e2023WR036741},
+    keywords = {graph neural networks, water distribution networks, pressure estimation, state estimation, water distribution systems, water management},
+    doi = {https://doi.org/10.1029/2023WR036741},
+    url = {https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2023WR036741},
+    eprint = {https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2023WR036741},
+    note = {e2023WR036741 2023WR036741},
+    year = {2024}
 }
+
 ```
