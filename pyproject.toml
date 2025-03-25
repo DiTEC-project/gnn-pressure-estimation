@@ -5,10 +5,7 @@ description = ""
 authors = ["cuongth95 <truonghuycuong95@gmail.com>", "atello <a.tello@rug.nl>"]
 license = "MIT"
 readme = "README.md"
-packages = [
-    { include = "gnn_pressure_estimation" },
-    { include = "gnn_pressure_estimation/**/*.py" },
-]
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
