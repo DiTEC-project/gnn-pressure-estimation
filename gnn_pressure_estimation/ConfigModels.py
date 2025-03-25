@@ -8,7 +8,7 @@
 
 import argparse
 import torch
-from gnn_pressure_estimation.GraphModels import (
+from GraphModels import (
     GraphConvWat,
     ChebNet,
     GATResMeanConv,

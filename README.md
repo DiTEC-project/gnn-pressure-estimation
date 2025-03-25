@@ -4,18 +4,24 @@
 
 This is the official repository for the paper: **"Graph Neural Networks for Pressure Estimation in Water Distribution Systems"**.
 
-## UPDATE: (21/04/2024)
-Some changes in default parameters have propagated you to a minimal example on C-town.
+## UPDATE: (25/03/2025)
+We refactorize the structure to use this library as a separable python package.
+
+By default, all generation flags are set to False. This allows user to choose which parameter is samplied.
+
 
 First, you can create a dataset based on the default config using the below command:
 
-``python scenegenv7.py  --executors 2 --batch_size 50 --config "configs/v7.1/ctown_7v1__EPYNET_config.ini``
+``python gnn_pressure_estimation/scenegenv7.py  --executors 2 --batch_size 50 --gen_demand --gen_res_total_head --config "configs/v7.1/ctown_7v1__EPYNET_config.ini``
 
-The created dataset `ctown.zip` should be located in the `datasets` folder.
+The command samples `nodal demand` and `reservoir total head` while keeping other values as they are in the INP file.
+Note that, in very rare cases, dataset creation may fail due to stochastic nature. If this happens, try generating it again.
+
+The created dataset, `ctown.zip`, should be located in the `datasets` folder. 
 
 Next, we can train GATRes using the command:
 
-``python train.py --model gatres_small --dataset_paths "datasets/ctown.zip" --input_paths "inputs/ctown.inp" --batch_size 32``
+``python gnn_pressure_estimation/train.py --model gatres_small --dataset_paths "datasets/ctown.zip" --input_paths "inputs/ctown.inp" --batch_size 32``
 
 
 ## Installation
