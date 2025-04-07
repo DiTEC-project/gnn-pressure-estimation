@@ -13,10 +13,10 @@ import wandb
 from datetime import datetime
 import torch
 import torch.nn.functional as F
-from utils.DataLoader import WDNDataset, NoisyWDNDataset, get_stacked_set2
-from utils.auxil import *
-from utils.timer import Timer
-from ConfigModels import config_gatres_small, select_model
+from gnn_pressure_estimation.utils.DataLoader import WDNDataset, NoisyWDNDataset, get_stacked_set2
+from gnn_pressure_estimation.utils.auxil import *
+from gnn_pressure_estimation.utils.timer import Timer
+from gnn_pressure_estimation.ConfigModels import config_gatres_small, select_model
 import epynet
 from torch_geometric.loader import DataLoader
 from tqdm import tqdm
